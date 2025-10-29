@@ -104,4 +104,4 @@
 
 ---
 
-© 2025 — *Car Rental Database Project*
+© 2025 — *Car Rental Database Project* :)
