@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - db-network
@@ -21,7 +21,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: root@kpi.edu
       PGADMIN_DEFAULT_PASSWORD: password123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "8080:80"
     volumes:
