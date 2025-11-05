@@ -163,3 +163,5 @@ SELECT * FROM booking;
 SELECT * FROM trip;
 SELECT * FROM payment;
 ```
+
+![Image](https://github.com/user-attachments/assets/986e913c-0046-49a5-b270-4ce7dbb81db5)
