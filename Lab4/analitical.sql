@@ -65,7 +65,7 @@ FROM client c
 WHERE c.client_id IN (
     SELECT DISTINCT t.client_id
     FROM trip t
-    JOIN payment p ON t.trip_id = p.trip_id
+    INNER JOIN payment p ON t.trip_id = p.trip_id
     WHERE p.amount > (SELECT AVG(amount) FROM payment)
 )
 ORDER BY c.lastname;
@@ -86,8 +86,8 @@ SELECT client_name, total_trips, total_spent
 FROM (
     SELECT cl.firstname || ' ' || cl.lastname AS client_name, COUNT(t.trip_id) AS total_trips, SUM(p.amount) AS total_spent
     FROM client cl
-    JOIN trip t ON cl.client_id = t.client_id
-    JOIN payment p ON t.trip_id = p.trip_id
+    INNER JOIN trip t ON cl.client_id = t.client_id
+    INNER JOIN payment p ON t.trip_id = p.trip_id
     GROUP BY cl.client_id, cl.firstname, cl.lastname
 ) AS client_stats
 WHERE total_trips > 1
