@@ -163,3 +163,16 @@ SELECT * FROM booking;
 SELECT * FROM trip;
 SELECT * FROM payment;
 ```
+![booking](https://github.com/user-attachments/assets/a544e686-7491-480b-9d0a-f97ff3a008db)
+![car](https://github.com/user-attachments/assets/71c86e1e-04b2-44da-a01a-41bad5959a4f)
+![car_location](https://github.com/user-attachments/assets/d950c9da-2c77-45cc-a5c4-45a61487c58a)
+![client](https://github.com/user-attachments/assets/f25a27ad-5bc5-4f20-b80d-ef166dfa1c59)
+![driver_license](https://github.com/user-attachments/assets/016dca72-03a4-4f2f-85cc-3b2783733a10)
+![payment](https://github.com/user-attachments/assets/1c692fda-7102-4dc5-a18b-aba83dd9e112)
+![trip](https://github.com/user-attachments/assets/fd8640d9-6470-4ef2-a4c4-1caa08d26bf1)
+
+
+
+
+
+
