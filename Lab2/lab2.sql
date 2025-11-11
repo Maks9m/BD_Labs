@@ -1,3 +1,4 @@
+-- ENUM types
 CREATE TYPE license AS ENUM ('A', 'B', 'C', 'D', 'E');
 CREATE TYPE fuel AS ENUM ('Petrol', 'Diesel', 'Electric', 'Hybrid');
 CREATE TYPE status AS ENUM ('pending', 'confirmed', 'completed');
@@ -5,64 +6,71 @@ CREATE TYPE car_status AS ENUM ('Available', 'Booked', 'Repaired');
 CREATE TYPE payment_type AS ENUM ('Credit Card', 'Debit Card', 'Gift Card');
 CREATE TYPE transaction AS ENUM ('Online', 'POS');
 
+-- Driver License
 CREATE TABLE IF NOT EXISTS driver_license (
-	driver_license_id serial PRIMARY KEY,
-	license_number char(10) NOT NULL UNIQUE,
-	license_type license NOT NULL,
-	expiry_date date NOT NULL
+    driver_license_id SERIAL PRIMARY KEY,
+    license_number CHAR(10) NOT NULL UNIQUE,
+    license_type license NOT NULL,
+    expiry_date DATE NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS client (
-	client_id serial PRIMARY KEY,
-	email varchar(100) NOT NULL UNIQUE,
-	firstname varchar(32) NOT NULL,
-	lastname varchar(32) NOT NULL,
-	driver_license integer not null references driver_license(driver_license_id)
+-- User
+CREATE TABLE IF NOT EXISTS user (
+    user_id SERIAL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    firstname VARCHAR(32) NOT NULL,
+    lastname VARCHAR(32) NOT NULL,
+    driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL
 );
 
+-- Car Location
 CREATE TABLE IF NOT EXISTS car_location (
-    car_location_id serial PRIMARY KEY,
-    address varchar(255) NOT NULL
+    car_location_id SERIAL PRIMARY KEY,
+    address VARCHAR(255) NOT NULL
 );
 
+-- Car
 CREATE TABLE IF NOT EXISTS car (
-    car_id serial PRIMARY KEY,
-    license_plate varchar(20) NOT NULL UNIQUE,
-    car_type varchar(50) NOT NULL,
+    car_id SERIAL PRIMARY KEY,
+    license_plate VARCHAR(20) NOT NULL UNIQUE,
+    car_type VARCHAR(50) NOT NULL,
     fuel fuel,
-    price decimal(8, 2) NOT NULL CHECK (price > 0),
+    price DECIMAL(8, 2) NOT NULL CHECK (price > 0),
     status car_status NOT NULL,
-	booked_by integer references client(client_id),
-    is_in integer not null references car_location(car_location_id)
+    booked_by INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    is_in INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
 );
 
+-- Booking
 CREATE TABLE IF NOT EXISTS booking (
-    book_id serial PRIMARY KEY,
-    user_id integer not null references client(client_id),
-    car_id integer not null references car(car_id),
+    book_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    car_id INTEGER REFERENCES car(car_id) ON DELETE SET NULL,
     status status DEFAULT 'pending'
 );
 
+-- Trip
 CREATE TABLE IF NOT EXISTS trip (
-    trip_id serial PRIMARY KEY,
-    car_id integer not null references car(car_id),
-    user_id integer not null references client(client_id),
-    start_time timestamp NOT NULL DEFAULT NOW(),
-    end_time timestamp,
-    duration varchar(50),
-    price decimal(8, 2) CHECK (price >= 0),
-    start_location integer not null references car_location(car_location_id),
-    end_location integer not null references car_location(car_location_id)
+    trip_id SERIAL PRIMARY KEY,
+    car_id INTEGER REFERENCES car(car_id) ON DELETE SET NULL,
+    user_id INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    start_time TIMESTAMP NOT NULL DEFAULT NOW(),
+    end_time TIMESTAMP,
+    duration VARCHAR(50),
+    price DECIMAL(8, 2) CHECK (price >= 0),
+    start_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL,
+    end_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
 );
 
+-- Payment
 CREATE TABLE IF NOT EXISTS payment (
-    payment_id serial PRIMARY KEY,
-    payment_date timestamp NOT NULL,
-    amount decimal(8, 2) NOT NULL CHECK (amount > 0),
+    payment_id SERIAL PRIMARY KEY,
+    payment_date TIMESTAMP NOT NULL,
+    amount DECIMAL(8, 2) NOT NULL CHECK (amount > 0),
     payment_type payment_type,
     transaction_method transaction,
     status status DEFAULT 'pending',
-    trip_id integer not null references trip(trip_id)
+    trip_id INTEGER REFERENCES trip(trip_id) ON DELETE SET NULL
 );
 
 INSERT INTO driver_license (license_number, license_type, expiry_date)
@@ -74,7 +82,7 @@ VALUES
     ('E56789012', 'B', '2028-08-15');
 
 
-INSERT INTO client (email, firstname, lastname, driver_license)
+INSERT INTO user (email, firstname, lastname, driver_license_id)
 VALUES
     ('john.doe@example.com', 'John', 'Doe', 1),
     ('jane.smith@example.com', 'Jane', 'Smith', 2),
