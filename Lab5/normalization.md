@@ -112,7 +112,7 @@ ALTER TABLE car DROP COLUMN fuel;
 ALTER TABLE car DROP COLUMN price;
 ALTER TABLE car DROP COLUMN booked_by;
 ALTER TABLE car RENAME COLUMN is_in TO location;
-ALTER TABLE car ALTER COLUMN DEFAULT status "Available"
+ALTER TABLE car ALTER COLUMN DEFAULT status 'Available';
 
 /* 1. Додаємо колонку book_id */
 ALTER TABLE trip ADD COLUMN book_id INTEGER REFERENCES booking(book_id) ON DELETE SET NULL;
@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS driver_license (
 );
 
 -- 3. User
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS "user" (
     user_id SERIAL PRIMARY KEY,
     driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL
     email VARCHAR(100) NOT NULL UNIQUE,
