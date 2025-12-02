@@ -80,6 +80,8 @@ erDiagram
     USER {
         int user_id PK
         string email
+        string firstname
+        string lastname
         int driver_license_id FK
     }
     CAR_LOCATION {
@@ -89,14 +91,14 @@ erDiagram
     CAR_MODEL {
         int model_id PK
         string model_name
+        enum fuel_type
         decimal base_price
     }
     CAR {
         int car_id PK
-        string license_plate
         int model_id FK
-        int booked_by FK
-        int is_in FK
+        int location FK
+        string license_plate
     }
     BOOKING {
         int book_id PK
@@ -107,8 +109,11 @@ erDiagram
     TRIP {
         int trip_id PK
         int book_id FK
+        int start_location FK
+        int end_location FK
         timestamp start_time
-        decimal price
+        timestamp end_time
+        decimal price        
     }
     PAYMENT {
         int payment_id PK

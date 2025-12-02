@@ -10,20 +10,25 @@
 * **Таблиця `Driver_License`**
       - PK: `driver_license_id`
       - FD: `driver_license_id` → `license_number`, `license_type`, `expiry_date`
-* **Таблиця `Car` (Оригінальна)**
+* **Таблиця `Car_Location`**
+      - PK: `car_location_id`
+      - FD: `car_location_id` → `address`
+* **Таблиця `Car`
       - PK: `car_id`
       - FD1 (PK): `car_id` → `license_plate`, `car_type`, `fuel`, `price`, `status`, `booked_by`, `is_in`
       - FD2 (Транзитивна): `car_type` → `fuel`, `price` *(Порушення 3НФ)*
+      - **Проблема:** Атрибути `fuel` та `price` залежать від `car_type`, а не безпосередньо від `car_id`
 * **Таблиця `Booking`**
       - PK: `book_id`
       - FD: `book_id` → `user_id`, `car_id`, `status`
-* **Таблиця `Trip`**
+* **Таблиця `Trip`
       - PK: `trip_id`
-      - FD: `trip_id` → `car_id`, `user_id`, `start_time`, `end_time`, `price`
-      - *Примітка:* `price` тут є історичним даними (вартість конкретної поїздки), тому залежить від `trip_id`, а не від поточної ціни авто.
+      - FD: `trip_id` → `car_id`, `user_id`, `start_time`, `end_time`, `start_location`, `end_location`, `price`
+      - **Проблема 1:** Дублювання зв'язків `user_id` та `car_id`, які вже є в `Booking`
+      - **Проблема 2:** Можливість створити Trip без відповідного Booking
 * **Таблиця `Payment`**
       - PK: `payment_id`
-      - FD: `payment_id` → `amount`, `payment_date`, `status`, `trip_id`
+      - FD: `payment_id` → `amount`, `payment_date`, `payment_type`, `transaction_method`, `status`, `trip_id`
 
 ## 2\. Покрокове пояснення нормалізації
 
@@ -32,7 +37,7 @@
 ### Крок 1: Перша нормальна форма (1NF)
 
 * **Вимога:** Атомарність значень, відсутність повторюваних груп.
-* **Аналіз:** Усі таблиці, включаючи `Car`, містять лише атомарні значення (рядки, числа, enum). Списків у клітинках немає.
+* **Аналіз:** Таблиця `Trip` мала дублювання зв'язків `user_id` та `car_id`, які вже є в `Booking`
 * **Результат:** 1NF виконано.
 
 ### Крок 2: Друга нормальна форма (2NF)
@@ -51,13 +56,24 @@
     1. Створено нову таблицю `car_model` для зберігання атрибутів моделі (`model_name`, `fuel`, `price`).
     2. З таблиці `car` видалено атрибути `car_type`, `fuel`, `price`.
     3. У таблицю `car` додано зовнішній ключ `model_id`.
-* **Результат:** Усі таблиці знаходяться в 3NF.
+* **Результат:** Кожна модель автомобіля описується один раз у таблиці `car_model`. Конкретні екземпляри (`car`) лише посилаються на модель через `model_id`.
 
-  **Оптимізація зв'язку Trip-Booking**
+#### Оптимізація зв'язку Trip-Booking
 
-* **Проблема:** Початкова схема таблиці `Trip` містила поля `user_id` та `car_id`. Це створювало часткову надлишковість, оскільки ці ж сутності вже пов'язані через таблицю `Booking`. Крім того, це дозволяло створити поїздку для користувача та авто, які не мали попереднього бронювання, або вказати в поїздці інше авто, ніж було заброньовано (порушення логічної цілісності).
-* **Рішення:** Замінено поля `user_id` та `car_id` на одне поле `book_id`.
-* **Результат:** Тепер `Trip` залежить від `Booking`. Це усуває дублювання даних та гарантує, що поїздка завжди відповідає конкретному бронюванню. Щоб дізнатися, хто їхав і на чому, використовується JOIN запит до таблиці `Booking`.
+* **Проблема:** Початкова схема таблиці `Trip` містила поля `user_id` та `car_id`. Це створювало надлишковість:
+  - Дані про користувача та авто дублюються (є в `Booking` та в `Trip`)
+  - Можливо створити поїздку без відповідного бронювання
+  - Можливо вказати в `Trip` інший автомобіль, ніж у `Booking` (порушення логічної цілісності)
+* **Рішення:** 
+  1. Видалено поля `user_id` та `car_id` з таблиці `Trip`
+  2. Додано зовнішній ключ `book_id` → `booking(book_id)`
+  3. Інформація про користувача та автомобіль тепер отримується через JOIN з `Booking`
+* **Результат:** 
+  - Усунено дублювання даних
+  - Гарантовано цілісність: кожна поїздка прив'язана до конкретного бронювання
+  - Спрощено логіку: неможливо створити Trip без Booking
+
+**Підсумок нормалізації:** Усі таблиці знаходяться в 3НФ. Створено нову таблицю `car_model`, оптимізовано зв'язок `Trip` → `Booking`.
 
 **SQL-команди для зміни структури (ALTER TABLE):**
 
@@ -155,12 +171,11 @@ CREATE TABLE IF NOT EXISTS car_model (
 -- 6. Car (MODIFIED TABLE)
 CREATE TABLE IF NOT EXISTS car (
     car_id SERIAL PRIMARY KEY,
-    license_plate VARCHAR(20) NOT NULL UNIQUE,
-    status car_status NOT NULL,
-    -- Foreign Key to Car Model replaces type, fuel, price
     model_id INTEGER REFERENCES car_model(model_id) ON DELETE RESTRICT,
     booked_by INTEGER REFERENCES "user"(user_id) ON DELETE SET NULL,
-    is_in INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    car_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    license_plate VARCHAR(20) NOT NULL UNIQUE,
+    status car_status NOT NULL,
 );
 
 -- 7. Booking
@@ -175,22 +190,21 @@ CREATE TABLE IF NOT EXISTS booking (
 CREATE TABLE IF NOT EXISTS trip (
     trip_id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES booking(book_id) ON DELETE SET NULL, -- Замість car_id та user_id
-    start_time TIMESTAMP NOT NULL DEFAULT NOW(),
-    end_time TIMESTAMP,
-    duration VARCHAR(50),
-    price DECIMAL(8, 2) CHECK (price >= 0),
     start_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL,
     end_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    start_time TIMESTAMP NOT NULL DEFAULT NOW(),
+    end_time TIMESTAMP,
+    price DECIMAL(8, 2) CHECK (price >= 0),
 );
 
 -- 9. Payment
 CREATE TABLE IF NOT EXISTS payment (
     payment_id SERIAL PRIMARY KEY,
+    trip_id INTEGER REFERENCES trip(trip_id) ON DELETE SET NULL
     payment_date TIMESTAMP NOT NULL,
     amount DECIMAL(8, 2) NOT NULL CHECK (amount > 0),
     payment_type payment_type,
     transaction_method transaction,
     status status DEFAULT 'pending',
-    trip_id INTEGER REFERENCES trip(trip_id) ON DELETE SET NULL
 );
 ```
