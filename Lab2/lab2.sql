@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS driver_license (
 );
 
 -- User
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS "user" (
     user_id SERIAL PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     firstname VARCHAR(32) NOT NULL,
@@ -37,14 +37,14 @@ CREATE TABLE IF NOT EXISTS car (
     fuel fuel,
     price DECIMAL(8, 2) NOT NULL CHECK (price > 0),
     status car_status NOT NULL,
-    booked_by INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    booked_by INTEGER REFERENCES "user"(user_id) ON DELETE SET NULL,
     is_in INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
 );
 
 -- Booking
 CREATE TABLE IF NOT EXISTS booking (
     book_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    user_id INTEGER REFERENCES "user"(user_id) ON DELETE SET NULL,
     car_id INTEGER REFERENCES car(car_id) ON DELETE SET NULL,
     status status DEFAULT 'pending'
 );
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS booking (
 CREATE TABLE IF NOT EXISTS trip (
     trip_id SERIAL PRIMARY KEY,
     car_id INTEGER REFERENCES car(car_id) ON DELETE SET NULL,
-    user_id INTEGER REFERENCES user(user_id) ON DELETE SET NULL,
+    user_id INTEGER REFERENCES "user"(user_id) ON DELETE SET NULL,
     start_time TIMESTAMP NOT NULL DEFAULT NOW(),
     end_time TIMESTAMP,
     duration VARCHAR(50),
@@ -82,7 +82,7 @@ VALUES
     ('E56789012', 'B', '2028-08-15');
 
 
-INSERT INTO user (email, firstname, lastname, driver_license_id)
+INSERT INTO "user" (email, firstname, lastname, driver_license_id)
 VALUES
     ('john.doe@example.com', 'John', 'Doe', 1),
     ('jane.smith@example.com', 'Jane', 'Smith', 2),

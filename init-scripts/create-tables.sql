@@ -15,12 +15,12 @@ CREATE TABLE IF NOT EXISTS driver_license (
 );
 
 -- 3. User
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS "user" (
     user_id SERIAL PRIMARY KEY,
-    driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL
+    driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     firstname VARCHAR(32) NOT NULL,
-    lastname VARCHAR(32) NOT NULL,
+    lastname VARCHAR(32) NOT NULL
 );
 
 -- 4. Car Location
@@ -41,9 +41,9 @@ CREATE TABLE IF NOT EXISTS car_model (
 CREATE TABLE IF NOT EXISTS car (
     car_id SERIAL PRIMARY KEY,
     model_id INTEGER REFERENCES car_model(model_id) ON DELETE RESTRICT,
-    location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL,
     license_plate VARCHAR(20) NOT NULL UNIQUE,
-    status car_status NOT NULL,
+    status car_status NOT NULL
 );
 
 -- 7. Booking
@@ -59,19 +59,19 @@ CREATE TABLE IF NOT EXISTS trip (
     trip_id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES booking(book_id) ON DELETE SET NULL, -- Замість car_id та user_id
     start_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL,
-    end_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    end_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL,
     start_time TIMESTAMP NOT NULL DEFAULT NOW(),
     end_time TIMESTAMP,
-    price DECIMAL(8, 2) CHECK (price >= 0),
+    price DECIMAL(8, 2) CHECK (price >= 0)
 );
 
 -- 9. Payment
 CREATE TABLE IF NOT EXISTS payment (
     payment_id SERIAL PRIMARY KEY,
-    trip_id INTEGER REFERENCES trip(trip_id) ON DELETE SET NULL
+    trip_id INTEGER REFERENCES trip(trip_id) ON DELETE SET NULL,
     payment_date TIMESTAMP NOT NULL,
     amount DECIMAL(8, 2) NOT NULL CHECK (amount > 0),
     payment_type payment_type,
     transaction_method transaction,
-    status status DEFAULT 'pending',
+    status status DEFAULT 'pending'
 );
