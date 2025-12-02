@@ -13,7 +13,7 @@
 * **Таблиця `Car_Location`**
       - PK: `car_location_id`
       - FD: `car_location_id` → `address`
-* **Таблиця `Car`
+* **Таблиця `Car`**
       - PK: `car_id`
       - FD1 (PK): `car_id` → `license_plate`, `car_type`, `fuel`, `price`, `status`, `booked_by`, `is_in`
       - FD2 (Транзитивна): `car_type` → `fuel`, `price` *(Порушення 3НФ)*
@@ -21,7 +21,7 @@
 * **Таблиця `Booking`**
       - PK: `book_id`
       - FD: `book_id` → `user_id`, `car_id`, `status`
-* **Таблиця `Trip`
+* **Таблиця `Trip`**
       - PK: `trip_id`
       - FD: `trip_id` → `car_id`, `user_id`, `start_time`, `end_time`, `start_location`, `end_location`, `price`
       - **Проблема 1:** Дублювання зв'язків `user_id` та `car_id`, які вже є в `Booking`
@@ -37,7 +37,11 @@
 ### Крок 1: Перша нормальна форма (1NF)
 
 * **Вимога:** Атомарність значень, відсутність повторюваних груп.
-* **Аналіз:** Таблиця `Trip` мала дублювання зв'язків `user_id` та `car_id`, які вже є в `Booking`
+* **Аналіз:**
+* Таблиця `Trip`
+- - мала дублювання зв'язків `user_id` та `car_id`, які вже є в `Booking`
+- - дублювання інформації яку можна обрахувати (`duration`)
+* Таблиця `Сar` мала дублювання звʼязку `user_id` який вже є в `Booking`
 * **Результат:** 1NF виконано.
 
 ### Крок 2: Друга нормальна форма (2NF)
@@ -106,6 +110,9 @@ ALTER TABLE car ALTER COLUMN model_id SET NOT NULL;
 ALTER TABLE car DROP COLUMN car_type;
 ALTER TABLE car DROP COLUMN fuel;
 ALTER TABLE car DROP COLUMN price;
+ALTER TABLE car DROP COLUMN booked_by;
+ALTER TABLE car RENAME COLUMN is_in TO location;
+ALTER TABLE car ALTER COLUMN DEFAULT status "Available"
 
 /* 1. Додаємо колонку book_id */
 ALTER TABLE trip ADD COLUMN book_id INTEGER REFERENCES booking(book_id) ON DELETE SET NULL;
@@ -120,6 +127,7 @@ WHERE trip.user_id = booking.user_id AND trip.car_id = booking.car_id;
 /* 3. Видаляємо старі колонки (тепер ці дані беруться через JOIN з booking) */
 ALTER TABLE trip DROP COLUMN car_id;
 ALTER TABLE trip DROP COLUMN user_id;
+ALTER TABLE trip DROP COLUMN duration;
 ```
 
 -----
@@ -146,12 +154,12 @@ CREATE TABLE IF NOT EXISTS driver_license (
 );
 
 -- 3. User
-CREATE TABLE IF NOT EXISTS "user" (
+CREATE TABLE IF NOT EXISTS user (
     user_id SERIAL PRIMARY KEY,
+    driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL
     email VARCHAR(100) NOT NULL UNIQUE,
     firstname VARCHAR(32) NOT NULL,
     lastname VARCHAR(32) NOT NULL,
-    driver_license_id INTEGER REFERENCES driver_license(driver_license_id) ON DELETE SET NULL
 );
 
 -- 4. Car Location
@@ -172,8 +180,7 @@ CREATE TABLE IF NOT EXISTS car_model (
 CREATE TABLE IF NOT EXISTS car (
     car_id SERIAL PRIMARY KEY,
     model_id INTEGER REFERENCES car_model(model_id) ON DELETE RESTRICT,
-    booked_by INTEGER REFERENCES "user"(user_id) ON DELETE SET NULL,
-    car_location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
+    location INTEGER REFERENCES car_location(car_location_id) ON DELETE SET NULL
     license_plate VARCHAR(20) NOT NULL UNIQUE,
     status car_status NOT NULL,
 );
