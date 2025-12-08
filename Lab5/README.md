@@ -133,3 +133,20 @@ erDiagram
     TRIP ||--|{ CAR_LOCATION : ends_at
     TRIP ||--o{ PAYMENT : paid_by
 ```
+## driver_license
+![driver_license](https://github.com/user-attachments/assets/ab008819-cf23-4bbd-bcab-2de08e20e4f2)
+## user
+![user](https://github.com/user-attachments/assets/302aa04d-5d00-4af3-bb9d-61f9a97cc8a8)
+## car_location
+![car_location](https://github.com/user-attachments/assets/320408d2-b9db-4390-b735-80cd085d73c2)
+## car_model
+![car_model](https://github.com/user-attachments/assets/37e19576-910f-4b9c-bf22-2bf05cb4b57e)
+## car
+![car](https://github.com/user-attachments/assets/1bc16d3a-975b-4ce0-9e90-032d7c794228)
+## booking
+![booking](https://github.com/user-attachments/assets/815a75b5-7bbe-458f-8495-c9dddb1a749a)
+## trip
+![trip](https://github.com/user-attachments/assets/c0ae245e-4f15-452e-89cb-affb19990288)
+## payment
+<img width="1018" height="90" alt="image" src="https://github.com/user-attachments/assets/602341b8-776a-4c13-bcde-e669308f9316" />
+
