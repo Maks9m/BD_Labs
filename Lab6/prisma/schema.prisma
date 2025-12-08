@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model booking {
+  book_id Int     @id @default(autoincrement())
+  user_id Int?
+  car_id  Int?
+  status  status? @default(pending)
+  car     car?    @relation(fields: [car_id], references: [car_id], onUpdate: NoAction)
+  user    user?   @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+  trip    trip[]
+}
+
+model car {
+  car_id        Int           @id @default(autoincrement())
+  model_id      Int?
+  location      Int?
+  license_plate String        @unique @db.VarChar(20)
+  status        car_status
+  booking       booking[]
+  car_location  car_location? @relation(fields: [location], references: [car_location_id], onUpdate: NoAction)
+  car_model     car_model?    @relation(fields: [model_id], references: [model_id], onDelete: Restrict, onUpdate: NoAction)
+}
+
+model car_location {
+  car_location_id                        Int    @id @default(autoincrement())
+  address                                String @db.VarChar(255)
+  car                                    car[]
+  trip_trip_end_locationTocar_location   trip[] @relation("trip_end_locationTocar_location")
+  trip_trip_start_locationTocar_location trip[] @relation("trip_start_locationTocar_location")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model car_model {
+  model_id   Int     @id @default(autoincrement())
+  model_name String  @unique @db.VarChar(50)
+  fuel_type  fuel
+  base_price Decimal @db.Decimal(8, 2)
+  car        car[]
+}
+
+model driver_license {
+  driver_license_id Int      @id @default(autoincrement())
+  license_number    String   @unique @db.Char(10)
+  license_type      license
+  expiry_date       DateTime @db.Date
+  user              user[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model payment {
+  payment_id         Int           @id @default(autoincrement())
+  trip_id            Int?
+  payment_date       DateTime      @db.Timestamp(6)
+  amount             Decimal       @db.Decimal(8, 2)
+  payment_type       payment_type?
+  transaction_method transaction?
+  status             status?       @default(pending)
+  trip               trip?         @relation(fields: [trip_id], references: [trip_id], onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model trip {
+  trip_id                                        Int           @id @default(autoincrement())
+  book_id                                        Int?
+  start_location                                 Int?
+  end_location                                   Int?
+  start_time                                     DateTime      @default(now()) @db.Timestamp(6)
+  end_time                                       DateTime?     @db.Timestamp(6)
+  price                                          Decimal?      @db.Decimal(8, 2)
+  payment                                        payment[]
+  booking                                        booking?      @relation(fields: [book_id], references: [book_id], onUpdate: NoAction)
+  car_location_trip_end_locationTocar_location   car_location? @relation("trip_end_locationTocar_location", fields: [end_location], references: [car_location_id], onUpdate: NoAction)
+  car_location_trip_start_locationTocar_location car_location? @relation("trip_start_locationTocar_location", fields: [start_location], references: [car_location_id], onUpdate: NoAction)
+}
+
+model user {
+  user_id           Int             @id @default(autoincrement())
+  driver_license_id Int?
+  email             String          @unique @db.VarChar(100)
+  firstname         String          @db.VarChar(32)
+  lastname          String          @db.VarChar(32)
+  booking           booking[]
+  driver_license    driver_license? @relation(fields: [driver_license_id], references: [driver_license_id], onUpdate: NoAction)
+}
+
+enum car_status {
+  Available
+  Booked
+  Repaired
+}
+
+enum fuel {
+  Petrol
+  Diesel
+  Electric
+  Hybrid
+}
+
+enum license {
+  A
+  B
+  C
+  D
+  E
+}
+
+enum payment_type {
+  Credit_Card @map("Credit Card")
+  Debit_Card  @map("Debit Card")
+  Gift_Card   @map("Gift Card")
+}
+
+enum status {
+  pending
+  confirmed
+  completed
+}
+
+enum transaction {
+  Online
+  POS
+}
