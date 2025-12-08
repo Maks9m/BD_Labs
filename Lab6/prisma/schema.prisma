@@ -5,7 +5,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+model comment {
+  comment_id Int     @id @default(autoincrement())
+  user_id    Int?
+  trip_id    Int?
+  text    String  @db.VarChar(500)
+  user       user?   @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
+  trip       trip?   @relation(fields: [trip_id], references: [trip_id], onUpdate: NoAction)
 }
 
 model booking {
@@ -76,6 +84,7 @@ model trip {
   end_time                                       DateTime?     @db.Timestamp(6)
   price                                          Decimal?      @db.Decimal(8, 2)
   payment                                        payment[]
+  comment                                        comment[]
   booking                                        booking?      @relation(fields: [book_id], references: [book_id], onUpdate: NoAction)
   car_location_trip_end_locationTocar_location   car_location? @relation("trip_end_locationTocar_location", fields: [end_location], references: [car_location_id], onUpdate: NoAction)
   car_location_trip_start_locationTocar_location car_location? @relation("trip_start_locationTocar_location", fields: [start_location], references: [car_location_id], onUpdate: NoAction)
@@ -88,6 +97,7 @@ model user {
   firstname         String          @db.VarChar(32)
   lastname          String          @db.VarChar(32)
   booking           booking[]
+  comment           comment[]
   driver_license    driver_license? @relation(fields: [driver_license_id], references: [driver_license_id], onUpdate: NoAction)
 }
 
@@ -105,11 +115,14 @@ enum fuel {
 }
 
 enum license {
+  M
   A
+  A1
+  B1
+  BE
   B
-  C
-  D
-  E
+  C1
+  D1
 }
 
 enum payment_type {
