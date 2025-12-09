@@ -23,7 +23,7 @@ model booking {
   status  status? @default(pending)
   car     car?    @relation(fields: [car_id], references: [car_id], onUpdate: NoAction)
   user    user?   @relation(fields: [user_id], references: [user_id], onUpdate: NoAction)
-  trip    trip[]
+  trips   trip[]
 }
 
 model car {
@@ -32,7 +32,7 @@ model car {
   location      Int?
   license_plate String        @unique @db.VarChar(20)
   status        car_status
-  booking       booking[]
+  bookings      booking[]
   car_location  car_location? @relation(fields: [location], references: [car_location_id], onUpdate: NoAction)
   car_model     car_model?    @relation(fields: [model_id], references: [model_id], onDelete: Restrict, onUpdate: NoAction)
 }
@@ -40,12 +40,11 @@ model car {
 model car_location {
   car_location_id                        Int    @id @default(autoincrement())
   address                                String @db.VarChar(255)
-  car                                    car[]
+  cars                                  car[]
   trip_trip_end_locationTocar_location   trip[] @relation("trip_end_locationTocar_location")
   trip_trip_start_locationTocar_location trip[] @relation("trip_start_locationTocar_location")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model car_model {
   model_id   Int     @id @default(autoincrement())
   model_name String  @unique @db.VarChar(50)
@@ -62,7 +61,6 @@ model driver_license {
   user              user[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model payment {
   payment_id         Int           @id @default(autoincrement())
   trip_id            Int?
@@ -74,7 +72,6 @@ model payment {
   trip               trip?         @relation(fields: [trip_id], references: [trip_id], onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model trip {
   trip_id                                        Int           @id @default(autoincrement())
   book_id                                        Int?
@@ -83,8 +80,8 @@ model trip {
   start_time                                     DateTime      @default(now()) @db.Timestamp(6)
   end_time                                       DateTime?     @db.Timestamp(6)
   price                                          Decimal?      @db.Decimal(8, 2)
-  payment                                        payment[]
-  comment                                        comment[]
+  payments                                       payment[]
+  comments                                       comment[]
   booking                                        booking?      @relation(fields: [book_id], references: [book_id], onUpdate: NoAction)
   car_location_trip_end_locationTocar_location   car_location? @relation("trip_end_locationTocar_location", fields: [end_location], references: [car_location_id], onUpdate: NoAction)
   car_location_trip_start_locationTocar_location car_location? @relation("trip_start_locationTocar_location", fields: [start_location], references: [car_location_id], onUpdate: NoAction)
@@ -96,8 +93,8 @@ model user {
   email             String          @unique @db.VarChar(100)
   firstname         String          @db.VarChar(32)
   lastname          String          @db.VarChar(32)
-  booking           booking[]
-  comment           comment[]
+  bookings          booking[]
+  comments          comment[]
   driver_license    driver_license? @relation(fields: [driver_license_id], references: [driver_license_id], onUpdate: NoAction)
 }
 

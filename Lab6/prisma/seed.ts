@@ -1,5 +1,6 @@
-import { Prisma, license, car_status, fuel, payment_type, transaction, status } from '@prisma/client';
-import prisma from './client';
+import { PrismaClient, Prisma, license, car_status, fuel, payment_type, transaction, status } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Clean existing tables...');
@@ -190,5 +191,4 @@ main()
   .catch(async (e) => {
     console.error(e);
     await prisma.$disconnect();
-    process.exit(1);
   });
